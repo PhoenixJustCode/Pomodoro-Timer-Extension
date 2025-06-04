@@ -1,0 +1,64 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff0f5; /* светло-розовый */
+    color: #5a2a38; /* тёмно-красный/сливовый */
+    text-align: center;
+    padding: 40px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background-color: #ffe4e1; /* нежно-розовый */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+  }
+  
+  .logo {
+    height: 50px;
+  }
+  
+  .button {
+    background-color: #ffb6c1; /* светлый розовый */
+    border: none;
+    color: #5a2a38;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #ff99aa;
+  }
+  
+  .no-shadow {
+    box-shadow: none;
+  }
+  
+  #title {
+    font-size: 32px;
+    margin-top: 60px;
+    background-color: #ffe4e1;
+    width: 150px;
+    height: 150px;
+    line-height: 150px;
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    color: #5a2a38;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    transition: transform 0.2s;
+  }
+  
+  
+  #title:hover {
+    transform: scale(1.05);
+  }
+  

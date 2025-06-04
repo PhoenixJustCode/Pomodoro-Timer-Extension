@@ -1,20 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "GopherJS Extension",
+  "name": "Pomodoro Timer Extension",
   "version": "1.0",
-  "description": "Chrome extension fully in GopherJS",
+  "description": "Удобный и простой таймер Pomodoro для повышения продуктивности",
   "action": {
     "default_popup": "static.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/tomato16.png",
+      "48": "icons/tomato48.png",
+      "128": "icons/tomato128.png"
     }
   },
   "permissions": [],
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/tomato16.png",
+    "48": "icons/tomato48.png",
+    "128": "icons/tomato128.png"
   }
 }
