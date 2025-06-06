@@ -2,7 +2,7 @@ package main
 
 import (
 	"strconv"
-	"github.com/gopherjs/gopherjs/js"
+	"github.com/gopherjs/gopherjs/js" // go->js
 )
 
 var (
@@ -10,7 +10,8 @@ var (
 	originalMins  int    // Изначальные минуты, введённые пользователем
 	remainingSecs int    // Сколько сейчас осталось
 	isPaused      bool   // Включен ли таймер
-	isRunning     bool   // Чтобы не запускать дважды
+	isRunning     bool   // Чтобы не запускать дважды	
+	titleBtnPressed = false // для проверки на нажатие на таймер
 )
 
 func formatTime(seconds int) string {
@@ -30,7 +31,7 @@ func updateDisplay() {
 	js.Global.Get("document").Call("getElementById", "title").Set("innerText", formatTime(remainingSecs))
 }
 
-func stopTimer() {
+func stopTimer(doc *js.Object) {
 	if timerID != nil {
 		js.Global.Call("clearInterval", timerID)
 		timerID = nil
@@ -39,54 +40,64 @@ func stopTimer() {
 	}
 }
 
-func recoverOriginalTime() {
+func recoverOriginalTime(doc *js.Object) {
 	if originalMins > 0 {
-		stopTimer()
+		stopTimer(doc)
 		remainingSecs = originalMins * 60
 		updateDisplay()
 	}
 }
 
-func startTimer() {
+func startTimer(doc *js.Object) {
 	if isRunning || remainingSecs <= 0 {
-		return
+		return 
 	}
 	timerID = js.Global.Call("setInterval", func() {
 		if remainingSecs > 0 {
 			remainingSecs--
 			updateDisplay()
 		} else {
-			stopTimer()
+			stopTimer(doc)
 		}
 	}, 1000)
 	isPaused = false
 	isRunning = true
 }
 
+func timerUpdate(doc *js.Object) {
+	input := js.Global.Call("prompt", "Введите количество минут", "25")
+	mins, err := strconv.Atoi(input.String())
+	if err == nil && mins > 0 {
+		originalMins = mins
+		remainingSecs = mins * 60
+		updateDisplay()
+	}
+}
+
+
 func main() {
 	updateDisplay()
 	doc := js.Global.Get("document")
 
-	title := doc.Call("getElementById", "title")
-	title.Call("addEventListener", "click", func() {
-		input := js.Global.Call("prompt", "Введите количество минут", "25")
-		mins, err := strconv.Atoi(input.String())
-		if err == nil && mins > 0 {
-			originalMins = mins
-			remainingSecs = mins * 60
-			updateDisplay()
-		}
+	doc.Call("getElementById", "title").Call("addEventListener", "click", func() {
+		titleBtnPressed = true
+		timerUpdate(doc)
 	})
 
 	doc.Call("getElementById", "startBtn").Call("addEventListener", "click", func() {
-		startTimer()
+		if titleBtnPressed {
+			startTimer(doc)
+		} else { 
+			timerUpdate(doc)
+			startTimer(doc)
+		}
 	})
 
 	doc.Call("getElementById", "stopBtn").Call("addEventListener", "click", func() {
-		stopTimer()
+		stopTimer(doc)
 	})
 
 	doc.Call("getElementById", "recoverBtn").Call("addEventListener", "click", func() {
-		recoverOriginalTime()
+		recoverOriginalTime(doc)
 	})
 }
