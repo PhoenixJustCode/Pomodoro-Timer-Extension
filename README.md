@@ -44,7 +44,9 @@
 
  -    Установите Go и сам проект
      ```bash
-            git clone https://github.com/PhoenixJustCode/Pomodoro-Timer-Extension
+            git clone https://github.com/PhoenixJustCode/Pomodoro-Timer-Extension ```
+ -   Перейдите в нужную дерикторию
+      ```bash
             cd Pomodoro-Timer-Extension/go-src```
  -    Установите GopherJS:
    ```bash
