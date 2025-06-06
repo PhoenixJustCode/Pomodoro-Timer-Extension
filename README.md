@@ -23,8 +23,7 @@
 
 ## 📷 Interface Preview
 
-![изображение](![изображение](https://github.com/user-attachments/assets/357e0a4a-83e0-415f-b8eb-f764af38abf4)
-)
+![изображение](https://github.com/user-attachments/assets/abab064c-f2e5-4c56-8b6c-26adeed2f86d)
 
 
 ---
@@ -43,13 +42,19 @@
 
 ## 📦 Installation
 
- -    Установите Go и сам проект 
+ -    Установите Go и сам проект
+     ```bash
             git clone https://github.com/PhoenixJustCode/Pomodoro-Timer-Extension
-            cd Pomodoro-Timer-Extension/go-src
+            cd Pomodoro-Timer-Extension/go-src```
  -    Установите GopherJS:
+   ```bash
           go install github.com/gopherjs/gopherjs@v1.19.0-beta1  # Or replace 'v1.19.0-beta1' with another version.
+   ```
+
  -    Скомпилируйте Go-код в JavaScript:
+      ```bash
           gopherjs build main.go
+      ```
   -    Загрузите расширение в Google Chrome
 
 ---
