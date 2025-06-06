@@ -23,7 +23,8 @@
 
 ## 📷 Interface Preview
 
-![изображение](https://github.com/user-attachments/assets/da375aae-06d9-44ce-94e1-33b15a565a6d)
+![изображение](![изображение](https://github.com/user-attachments/assets/357e0a4a-83e0-415f-b8eb-f764af38abf4)
+)
 
 ---
 
