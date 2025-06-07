@@ -2,6 +2,8 @@ package main
 
 import (
 	"strconv"
+	"time"
+
 	"github.com/gopherjs/gopherjs/js" // go->js
 )
 
@@ -12,6 +14,7 @@ var (
 	isPaused      bool   // Включен ли таймер
 	isRunning     bool   // Чтобы не запускать дважды	
 	titleBtnPressed = false // для проверки на нажатие на таймер
+	innerTimer = false // для внутреннего таймера
 )
 
 func formatTime(seconds int) string {
@@ -35,9 +38,10 @@ func stopTimer(doc *js.Object) {
 	if timerID != nil {
 		js.Global.Call("clearInterval", timerID)
 		timerID = nil
-		isPaused = true
-		isRunning = false
 	}
+	clearStart()
+	isPaused = true
+	isRunning = false
 }
 
 func recoverOriginalTime(doc *js.Object) {
@@ -48,21 +52,62 @@ func recoverOriginalTime(doc *js.Object) {
 	}
 }
 
+func saveStart(duration int) {
+	storage := js.Global.Get("localStorage")
+	storage.Call("setItem", "startTime", strconv.FormatInt(time.Now().Unix(), 10))
+	storage.Call("setItem", "duration", strconv.Itoa(duration))
+}
+
+func loadRemainingSecs() int {
+	storage := js.Global.Get("localStorage")
+	startStr := storage.Call("getItem", "startTime")
+	durationStr := storage.Call("getItem", "duration")
+
+	if startStr == nil || durationStr == nil {
+		return 0
+	}
+
+	startTime, err1 := strconv.ParseInt(startStr.String(), 10, 64)
+	duration, err2 := strconv.Atoi(durationStr.String())
+	if err1 != nil || err2 != nil {
+		return 0
+	}
+
+	elapsed := int(time.Now().Unix() - startTime)
+	remaining := duration - elapsed
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
+func clearStart() {
+	storage := js.Global.Get("localStorage")
+	storage.Call("removeItem", "startTime")
+	storage.Call("removeItem", "duration")
+}
+
 func startTimer(doc *js.Object) {
 	if isRunning || remainingSecs <= 0 {
-		return 
+		return
 	}
+
+	saveStart(remainingSecs) // ⬅ Важно
+
 	timerID = js.Global.Call("setInterval", func() {
+		remainingSecs = loadRemainingSecs() // ⬅ обновляем с внутреннего таймера
 		if remainingSecs > 0 {
-			remainingSecs--
 			updateDisplay()
 		} else {
 			stopTimer(doc)
+			clearStart()
 		}
 	}, 1000)
+
 	isPaused = false
 	isRunning = true
 }
+
 
 func timerUpdate(doc *js.Object) {
 	input := js.Global.Call("prompt", "Введите количество минут", "25")
@@ -78,6 +123,16 @@ func timerUpdate(doc *js.Object) {
 func main() {
 	updateDisplay()
 	doc := js.Global.Get("document")
+	remainingSecs = loadRemainingSecs()
+	
+	if remainingSecs > 0 && titleBtnPressed {
+		updateDisplay()
+		startTimer(doc)
+	} else {
+		remainingSecs = 0
+		timerUpdate(doc)
+		updateDisplay()
+	}	
 
 	doc.Call("getElementById", "title").Call("addEventListener", "click", func() {
 		titleBtnPressed = true
