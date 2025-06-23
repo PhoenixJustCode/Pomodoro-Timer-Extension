@@ -4,17 +4,18 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gopherjs/gopherjs/js" // go->js
+	"github.com/gopherjs/gopherjs/js"
 )
 
 var (
-	timerID       *js.Object
-	originalMins  int    // Изначальные минуты, введённые пользователем
-	remainingSecs int    // Сколько сейчас осталось
-	isPaused      bool   // Включен ли таймер
-	isRunning     bool   // Чтобы не запускать дважды	
-	titleBtnPressed = false // для проверки на нажатие на таймер
-	innerTimer = false // для внутреннего таймера
+	timerID          *js.Object
+	originalMins     int
+	remainingSecs    int
+	isPaused         bool
+	isRunning        bool
+	titleBtnPressed  = false
+	innerTimer       = false
+	SoundTimer       *js.Object
 )
 
 func formatTime(seconds int) string {
@@ -39,7 +40,11 @@ func stopTimer(doc *js.Object) {
 		js.Global.Call("clearInterval", timerID)
 		timerID = nil
 	}
-	clearStart()
+	if SoundTimer != nil {
+		SoundTimer.Call("pause")
+	}
+	saveRunningState(false) // 👈 сохраняем что остановлено
+	// clearStart()
 	isPaused = true
 	isRunning = false
 }
@@ -87,20 +92,41 @@ func clearStart() {
 	storage.Call("removeItem", "duration")
 }
 
+func saveRunningState(running bool) {
+	state := "false"
+	if running {
+		state = "true"
+	}
+	js.Global.Get("localStorage").Call("setItem", "wasRunning", state)
+}
+
+func loadRunningState() bool {
+	state := js.Global.Get("localStorage").Call("getItem", "wasRunning")
+	return state != nil && state.String() == "true"
+}
+
 func startTimer(doc *js.Object) {
 	if isRunning || remainingSecs <= 0 {
 		return
 	}
 
-	saveStart(remainingSecs) // ⬅ Важно
+	saveStart(remainingSecs)
+	saveRunningState(true) // 👈 сохраняем что запущен
 
 	timerID = js.Global.Call("setInterval", func() {
-		remainingSecs = loadRemainingSecs() // ⬅ обновляем с внутреннего таймера
+		remainingSecs = loadRemainingSecs()
+
 		if remainingSecs > 0 {
+			if remainingSecs == 5 {
+				SoundTimer = playSound("fiveSound")
+			}
 			updateDisplay()
 		} else {
+			remainingSecs = 0
+			playSound("lastSound")
 			stopTimer(doc)
 			clearStart()
+			updateDisplay()
 		}
 	}, 1000)
 
@@ -108,31 +134,40 @@ func startTimer(doc *js.Object) {
 	isRunning = true
 }
 
-
 func timerUpdate(doc *js.Object) {
 	input := js.Global.Call("prompt", "Введите количество минут", "25")
 	mins, err := strconv.Atoi(input.String())
-	if err == nil && mins > 0 {
-		originalMins = mins
-		remainingSecs = mins * 60
+	if err == nil && mins >= 0 {
+		if mins == 0 {
+			originalMins = 0
+			remainingSecs = 10
+		} else {
+			originalMins = mins
+			remainingSecs = mins * 60
+		}
 		updateDisplay()
 	}
 }
 
+func playSound(sound string) *js.Object {
+	audio := js.Global.Get("document").Call("getElementById", sound)
+	if audio != nil {
+		audio.Call("play")
+	}
+	return audio
+}
 
 func main() {
-	updateDisplay()
 	doc := js.Global.Get("document")
 	remainingSecs = loadRemainingSecs()
-	
-	if remainingSecs > 0 && titleBtnPressed {
+
+	if remainingSecs > 0 && loadRunningState() {
 		updateDisplay()
 		startTimer(doc)
 	} else {
 		remainingSecs = 0
-		timerUpdate(doc)
 		updateDisplay()
-	}	
+	}
 
 	doc.Call("getElementById", "title").Call("addEventListener", "click", func() {
 		titleBtnPressed = true
@@ -142,9 +177,14 @@ func main() {
 	doc.Call("getElementById", "startBtn").Call("addEventListener", "click", func() {
 		if titleBtnPressed {
 			startTimer(doc)
-		} else { 
-			timerUpdate(doc)
-			startTimer(doc)
+		} else {
+			if remainingSecs > 0 {
+				startTimer(doc)
+				titleBtnPressed = true
+			} else  {
+				timerUpdate(doc)
+				startTimer(doc)
+			}	
 		}
 	})
 
